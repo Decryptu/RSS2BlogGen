@@ -1,12 +1,12 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
+    background: black;
 }
 header {
     display: flex;
     justify-content: space-between;
     padding: 20px;
-    background-color: #f0f0f0;
 }
 main {
     padding: 20px;
@@ -15,7 +15,7 @@ main {
 article {
     margin-bottom: 20px;
     padding: 20px;
-    border: 1px solid #ddd;
+    border: 1px solid gray;
     border-radius: 8px;
 }
 article h2 {
@@ -30,5 +30,5 @@ article a {
 }
 article span {
     font-size: 0.8em;
-    color: #666;
+    color: white;
 }
