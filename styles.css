@@ -1,34 +1,40 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: black;
+    background-color: black;
+    color: white;
 }
+
 header {
     display: flex;
     justify-content: space-between;
     padding: 20px;
 }
-main {
+
+.grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
     padding: 20px;
 }
 
 article {
-    margin-bottom: 20px;
-    padding: 20px;
     border: 1px solid gray;
     border-radius: 8px;
+    overflow: hidden;
 }
-article h2 {
-    margin: 0 0 10px;
+
+article img {
+    width: 100%;
+    height: auto;
 }
-article p {
-    margin: 0 0 10px;
+
+article div {
+    padding: 15px;
 }
-article a {
-    display: inline-block;
-    margin-bottom: 10px;
-}
-article span {
-    font-size: 0.8em;
-    color: white;
+
+@media (max-width: 600px) {
+    .grid-layout {
+        grid-template-columns: 1fr;
+    }
 }
