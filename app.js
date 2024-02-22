@@ -32,11 +32,12 @@ function parseFeed(xmlString) {
             creator = item.querySelector('creator')?.textContent || 'Unknown Author';
         }
         const pubDate = item.querySelector('pubDate')?.textContent || '';
-        const description = item.querySelector('description')?.textContent || 'No description available';
-        // Extract the source website name from the link
-        const source = new URL(link).hostname.replace('www.', '').replace(/\.fr|\.com|\.net|\.org/gi, '');
+        let description = item.querySelector('description')?.textContent || 'No description available';
+        
+        // Remove the sentence that states where the article first appeared
+        description = description.replace(/L’article .* est apparu en premier sur .*\.|L’article .* est apparu en premier sur .*/g, '');
 
-        return { title, link, creator, pubDate, description, source };
+        return { title, link, creator, pubDate, description };
     });
 }
 
