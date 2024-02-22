@@ -39,7 +39,7 @@ async function fetchAndDisplayFeeds(feedUrls) {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             if (data.contents) {
-                const decodedXml = decodeBase64UTF8(data.contents.split(';base64,')[1]);
+                const decodedXml = decodeBase64UTF8(data.contents);
                 parseXML(decodedXml);
             } else {
                 console.error("No contents found in the response.");
@@ -69,10 +69,11 @@ function parseXML(xmlString) {
 
 function displayFeed(items) {
     const feedContainer = document.getElementById('feed');
+    feedContainer.innerHTML = ''; // Clear existing feed items before adding new ones
     items.forEach((item) => {
         const title = item.querySelector('title')?.textContent || 'No Title';
         const link = item.querySelector('link')?.textContent || '#';
-        const creator = item.querySelector('dc\\:creator')?.textContent || 'Unknown Author';
+        const creator = item.querySelector('creator, dc\\:creator')?.textContent || 'Unknown Author';
         const pubDate = new Date(item.querySelector('pubDate')?.textContent).toLocaleDateString() || 'No Date';
         const description = item.querySelector('description')?.textContent || 'No description available';
 
