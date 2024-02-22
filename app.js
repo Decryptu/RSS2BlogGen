@@ -1,7 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const feedUrls = [
         'https://cryptoast.fr/feed/',
-        'https://coinacademy.fr/feed/'
+        'https://coinacademy.fr/feed/',
+        'https://journalducoin.com/feed/'
     ];
     fetchAndDisplayFeeds(feedUrls);
 });
