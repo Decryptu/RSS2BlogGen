@@ -8,26 +8,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchAndDisplayFeeds(feedUrls) {
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    // Fetch feeds concurrently to improve load time
-    const feedPromises = feedUrls.map(feedUrl => fetchFeed(proxyUrl, feedUrl));
-    const feeds = await Promise.all(feedPromises);
-    feeds.forEach(feed => {
-        if (feed) parseXML(feed); // Parse and display each feed if successfully fetched
-    });
-}
-
-async function fetchFeed(proxyUrl, feedUrl) {
-    try {
-        const response = await fetch(`${proxyUrl}${encodeURIComponent(feedUrl)}`);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        return await response.text();
-    } catch (error) {
-        console.error("Error fetching RSS feed:", error);
-        return null;
+    for (const feedUrl of feedUrls) {
+        try {
+            const response = await fetch(`${proxyUrl}${encodeURIComponent(feedUrl)}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const xmlText = await response.text();
+            parseAndDisplayFeed(xmlText);
+        } catch (error) {
+            console.error("Error fetching RSS feed:", error.message);
+        }
     }
 }
 
-function parseXML(xmlString) {
+function parseAndDisplayFeed(xmlString) {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlString, "text/xml");
     const items = xmlDoc.querySelectorAll('item');
@@ -54,7 +47,6 @@ function displayFeed(items) {
                 <p>By ${creator} on ${pubDate}</p>
             </article>
         `;
-        // Append each article to the container to ensure all feeds are displayed
         feedContainer.insertAdjacentHTML('beforeend', articleHTML);
     });
 }
