@@ -3,71 +3,52 @@ document.addEventListener('DOMContentLoaded', () => {
         'https://cryptoast.fr/feed/',
         'https://coinacademy.fr/feed/'
     ];
-    console.log("Starting to fetch feeds...");
+    console.log("Starting to fetch and display feeds...");
     fetchAndDisplayFeeds(feedUrls);
 });
 
 async function fetchAndDisplayFeeds(feedUrls) {
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    for (const feedUrl of feedUrls) {
-        console.log(`Fetching feed: ${feedUrl}`);
-        try {
-            const response = await fetch(`${proxyUrl}${encodeURIComponent(feedUrl)}`);
-            if (!response.ok) {
-                console.error(`HTTP error! status: ${response.status} for ${feedUrl}`);
-                continue;
-            }
-            const xmlText = await response.text();
-            console.log(`Fetched feed successfully: ${feedUrl}`);
-            parseAndDisplayFeed(xmlText);
-        } catch (error) {
-            console.error(`Error fetching RSS feed: ${feedUrl}`, error.message);
-        }
-    }
+    const feedPromises = feedUrls.map(url => fetch(`${proxyUrl}${encodeURIComponent(url)}`).then(response => response.text()));
+    const feeds = await Promise.all(feedPromises);
+
+    const articles = [];
+    feeds.forEach(feed => {
+        const items = parseFeed(feed);
+        articles.push(...items);
+    });
+
+    // Sort articles by date
+    articles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+
+    // Display sorted articles
+    displayArticles(articles);
 }
 
-function parseAndDisplayFeed(xmlString) {
+function parseFeed(xmlString) {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-    
-    // Check for parser errors
-    if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
-        console.error("Error parsing XML", xmlDoc.getElementsByTagName("parsererror")[0].textContent);
-        return;
-    }
-
     const items = xmlDoc.querySelectorAll('item');
-    console.log(`Found ${items.length} items in the feed`);
-    if (items.length === 0) {
-        console.error("No items found in the XML document.");
-        return;
-    }
-    displayFeed(items);
+    return Array.from(items).map(item => ({
+        title: item.querySelector('title')?.textContent || 'No Title',
+        link: item.querySelector('link')?.textContent || '#',
+        creator: item.querySelector('dc\\:creator')?.textContent || 'Unknown Author',
+        pubDate: item.querySelector('pubDate')?.textContent || '',
+        description: item.querySelector('description')?.textContent || 'No description available'
+    }));
 }
 
-function displayFeed(items) {
+function displayArticles(articles) {
     const feedContainer = document.getElementById('feed');
-    items.forEach(item => {
-        const title = item.querySelector('title')?.textContent || 'No Title';
-        const link = item.querySelector('link')?.textContent || '#';
-        let creator = item.querySelector('dc\\:creator')?.textContent || item.querySelector('creator')?.textContent || 'Unknown Author';
-        
-        // Decode HTML entities in the creator's name
-        const textarea = document.createElement('textarea');
-        textarea.innerHTML = creator;
-        creator = textarea.value;
-
-        const pubDate = new Date(item.querySelector('pubDate')?.textContent).toLocaleDateString() || 'No Date';
-        const description = item.querySelector('description')?.textContent || 'No description available';
-
+    feedContainer.innerHTML = ''; // Clear existing content
+    articles.forEach(article => {
         const articleHTML = `
             <article>
-                <h2><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></h2>
-                <p>${description}</p>
-                <p>By ${creator} on ${pubDate}</p>
+                <h2><a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a></h2>
+                <p>${article.description}</p>
+                <p>By ${article.creator} on ${new Date(article.pubDate).toLocaleDateString()}</p>
             </article>
         `;
-        console.log(`Displaying article: ${title}`);
         feedContainer.insertAdjacentHTML('beforeend', articleHTML);
     });
 }
