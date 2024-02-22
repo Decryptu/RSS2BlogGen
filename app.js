@@ -1,15 +1,26 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const feedUrls = [
+    initializeTheme();
+    fetchAndDisplayFeeds([
         'https://cryptoast.fr/feed/',
         'https://coinacademy.fr/feed/',
         'https://journalducoin.com/feed/'
-    ];
-    initializeTheme();
-    fetchAndDisplayFeeds(feedUrls);
+    ]);
     setupSearchFilter();
+    displayLoadingIndicator(true);
 });
 
 let allArticles = [];
+let fetchOperationsCompleted = 0; // Counter for completed fetch operations
+
+function displayLoadingIndicator(show) {
+    const loader = document.getElementById('loader');
+    if (!loader) {
+        const loaderHTML = `<div id="loader">Loading...</div>`;
+        document.body.insertAdjacentHTML('afterbegin', loaderHTML);
+    } else {
+        loader.style.display = show ? 'block' : 'none';
+    }
+}
 
 function initializeTheme() {
     const currentTheme = localStorage.getItem('theme') || 'dark';
@@ -35,7 +46,14 @@ function setupSearchFilter() {
 
 async function fetchAndDisplayFeeds(feedUrls) {
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    feedUrls.forEach(url => fetchFeed(url, proxyUrl));
+    feedUrls.forEach(url => {
+        fetchFeed(url, proxyUrl).finally(() => {
+            fetchOperationsCompleted++;
+            if (fetchOperationsCompleted === feedUrls.length) {
+                displayLoadingIndicator(false); // Hide loading indicator when all fetches are complete
+            }
+        });
+    });
 }
 
 async function fetchFeed(url, proxyUrl) {
@@ -48,7 +66,7 @@ async function fetchFeed(url, proxyUrl) {
         const articles = parseFeed(feedText);
         allArticles = [...allArticles, ...articles];
         allArticles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
-        displayArticles(allArticles);
+        displayArticlesIncrementally(articles);
     } catch (error) {
         console.error("Error fetching or processing feed:", error);
     }
@@ -71,18 +89,16 @@ function parseFeed(xmlString) {
     }));
 }
 
-function displayArticles(articles) {
+function displayArticlesIncrementally(newArticles) {
     const feedContainer = document.getElementById('feed');
-    feedContainer.innerHTML = articles.map(({ title, link, creator, pubDate, description, siteName }) => {
-        const pubDateDisplay = pubDate ? new Date(pubDate).toLocaleDateString() : 'No Date';
-        return `
-            <article>
-                <h2><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></h2>
-                <p>${description}</p>
-                <p>By ${creator} on ${pubDateDisplay} | ${siteName}</p>
-            </article>
-        `;
-    }).join('');
+    newArticles.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate)).forEach(article => {
+        const articleHTML = `<article>
+            <h2><a href="${article.link}" target="_blank" rel="noopener noreferrer">${article.title}</a></h2>
+            <p>${article.description}</p>
+            <p>By ${article.creator} on ${new Date(article.pubDate).toLocaleDateString()} | ${article.siteName}</p>
+        </article>`;
+        feedContainer.insertAdjacentHTML('beforeend', articleHTML);
+    });
 }
 
 function filterAndDisplayArticles(searchTerm) {
@@ -91,5 +107,5 @@ function filterAndDisplayArticles(searchTerm) {
         description.toLowerCase().includes(searchTerm) ||
         creator.toLowerCase().includes(searchTerm)
     );
-    displayArticles(filteredArticles);
+    displayArticlesIncrementally(filteredArticles);
 }
