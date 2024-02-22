@@ -5,7 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
         'https://journalducoin.com/feed/'
     ];
     fetchAndDisplayFeeds(feedUrls);
+
+    // Add event listener for real-time search
+    document.getElementById('search').addEventListener('input', (event) => {
+        const searchTerm = event.target.value.toLowerCase();
+        filterAndDisplayArticles(searchTerm);
+    });
 });
+
+let allArticles = []; // Store all fetched articles globally
 
 async function fetchAndDisplayFeeds(feedUrls) {
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
@@ -18,7 +26,7 @@ async function fetchAndDisplayFeeds(feedUrls) {
                 return response.text();
             })
         ));
-        const allArticles = feedResponses.flatMap(feed => parseFeed(feed))
+        allArticles = feedResponses.flatMap(feed => parseFeed(feed))
             .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate)); // Sort articles by date
         displayArticles(allArticles);
     } catch (error) {
@@ -62,4 +70,14 @@ function displayArticles(articles) {
         `;
         feedContainer.insertAdjacentHTML('beforeend', articleHTML);
     });
+}
+
+// New function to filter and display articles based on search term
+function filterAndDisplayArticles(searchTerm) {
+    const filteredArticles = allArticles.filter(({ title, description, creator }) => 
+        title.toLowerCase().includes(searchTerm) ||
+        description.toLowerCase().includes(searchTerm) ||
+        creator.toLowerCase().includes(searchTerm)
+    );
+    displayArticles(filteredArticles);
 }
