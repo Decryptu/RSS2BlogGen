@@ -1,29 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Existing code to fetch and display RSS feed
-    fetchRSSFeed();
-
-    // Add search functionality
-    const searchInput = document.getElementById('search');
-    searchInput.addEventListener('keyup', function() {
-        const query = this.value.toLowerCase();
-        const articles = document.querySelectorAll('article');
-        
-        articles.forEach(article => {
-            const title = article.querySelector('h2').textContent.toLowerCase();
-            const description = article.querySelector('p').textContent.toLowerCase();
-            const author = article.querySelector('p:nth-child(3)').textContent.toLowerCase(); // Adjust if necessary
-
-            // Check if the article matches the search query
-            if (title.includes(query) || description.includes(query) || author.includes(query)) {
-                article.style.display = ''; // Show matching articles
-            } else {
-                article.style.display = 'none'; // Hide non-matching articles
-            }
-        });
-    });
-});
-
-document.addEventListener('DOMContentLoaded', () => {
     const feedUrls = [
         'https://cryptoast.fr/feed/',
         'https://coinacademy.fr/feed/'
