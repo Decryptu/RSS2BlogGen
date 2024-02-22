@@ -26,11 +26,20 @@ async function fetchRSSFeed() {
     }
 }
 
-function parseXML(xmlString) {
-    console.log("Parsing XML data...");
+function parseXML(encodedXmlString) {
+    console.log("Decoding Base64 XML data...");
+    const decodedXml = atob(encodedXmlString.split(';base64,')[1]);
+    console.log("Decoded XML:", decodedXml);
+
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+    const xmlDoc = parser.parseFromString(decodedXml, "text/xml");
     console.log("XML Document:", xmlDoc);
+
+    const parseError = xmlDoc.getElementsByTagName("parsererror");
+    if (parseError.length) {
+        console.error("Error in parsing XML:", parseError[0].textContent);
+        return;
+    }
 
     const items = xmlDoc.querySelectorAll('item');
     console.log(`Found ${items.length} 'item' elements.`);
