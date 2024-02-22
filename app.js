@@ -35,7 +35,23 @@ function setupSearchFilter() {
 
 async function fetchAndDisplayFeeds(feedUrls) {
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    feedUrls.forEach(url => fetchFeed(url, proxyUrl));
+    showLoadingIndicator(true); // Show loading indicator
+    try {
+        await Promise.all(feedUrls.map(url => fetchFeed(url, proxyUrl)));
+    } catch (error) {
+        console.error("Error fetching feeds:", error);
+    } finally {
+        showLoadingIndicator(false); // Hide loading indicator after fetching
+    }
+}
+
+function showLoadingIndicator(show) {
+    const loadingIndicator = document.getElementById('loading');
+    if (show) {
+        loadingIndicator.style.display = 'block';
+    } else {
+        loadingIndicator.style.display = 'none';
+    }
 }
 
 async function fetchFeed(url, proxyUrl) {
