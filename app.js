@@ -53,18 +53,16 @@ function parseXML(encodedXmlString) {
 
 function displayFeed(items) {
     const feedContainer = document.getElementById('feed');
-    feedContainer.innerHTML = ''; // Clear existing content
+    feedContainer.innerHTML = '';
 
     items.forEach((item, index) => {
-        console.log(`Processing item ${index + 1}...`);
+        const title = item.querySelector('title') ? item.querySelector('title').textContent : 'No Title';
+        const link = item.querySelector('link') ? item.querySelector('link').textContent : '#';
+        const creator = item.querySelector('dc\\:creator') ? item.querySelector('dc\\:creator').textContent : 'Unknown Author';
+        const pubDate = item.querySelector('pubDate') ? new Date(item.querySelector('pubDate').textContent).toLocaleDateString() : 'No Date';
+        const description = item.querySelector('description') ? item.querySelector('description').textContent : 'No Description Available';
 
-        const title = item.querySelector('title').textContent;
-        const link = item.querySelector('link').textContent;
-        const creator = item.querySelector('dc\\:creator').textContent;
-        const pubDate = new Date(item.querySelector('pubDate').textContent).toLocaleDateString();
-        const description = item.querySelector('description').textContent;
-
-        console.log(`Item ${index + 1} details:`, { title, link, creator, pubDate, description });
+        console.log(`Processing item ${index + 1}: ${title}`);
 
         const articleHTML = `
             <article>
