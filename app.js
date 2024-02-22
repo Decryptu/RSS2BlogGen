@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
         'https://cryptoast.fr/feed/',
         'https://coinacademy.fr/feed/'
     ];
-    console.log("Starting to fetch and display feeds...");
     fetchAndDisplayFeeds(feedUrls);
 });
 
@@ -29,13 +28,21 @@ function parseFeed(xmlString) {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlString, "text/xml");
     const items = xmlDoc.querySelectorAll('item');
-    return Array.from(items).map(item => ({
-        title: item.querySelector('title')?.textContent || 'No Title',
-        link: item.querySelector('link')?.textContent || '#',
-        creator: item.querySelector('dc\\:creator')?.textContent || 'Unknown Author',
-        pubDate: item.querySelector('pubDate')?.textContent || '',
-        description: item.querySelector('description')?.textContent || 'No description available'
-    }));
+    return Array.from(items).map(item => {
+        // Extract and decode the creator's name
+        let creator = item.querySelector('dc\\:creator')?.textContent || 'Unknown Author';
+        const textarea = document.createElement('textarea');
+        textarea.innerHTML = creator;
+        creator = textarea.value;
+
+        return {
+            title: item.querySelector('title')?.textContent || 'No Title',
+            link: item.querySelector('link')?.textContent || '#',
+            creator: creator,
+            pubDate: item.querySelector('pubDate')?.textContent || '',
+            description: item.querySelector('description')?.textContent || 'No description available'
+        };
+    });
 }
 
 function displayArticles(articles) {
