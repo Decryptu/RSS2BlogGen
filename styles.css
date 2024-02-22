@@ -1,3 +1,16 @@
+body.light {
+    background-color: white;
+    color: black;
+}
+
+body.light header {
+    border-bottom: 1px solid #eaeaea;
+}
+
+body.light article {
+    border-color: #ccc;
+}
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;

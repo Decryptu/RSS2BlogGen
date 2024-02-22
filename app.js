@@ -81,3 +81,17 @@ function filterAndDisplayArticles(searchTerm) {
     );
     displayArticles(filteredArticles);
 }
+
+// Check for saved theme preference
+const currentTheme = localStorage.getItem('theme') || 'dark';
+document.body.classList.add(currentTheme);
+const themeSwitchButton = document.getElementById('theme-switch');
+themeSwitchButton.textContent = currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+
+themeSwitchButton.addEventListener('click', () => {
+    const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+    document.body.classList.remove('light', 'dark'); // Remove both to ensure no conflict
+    document.body.classList.add(newTheme);
+    localStorage.setItem('theme', newTheme);
+    themeSwitchButton.textContent = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+});
