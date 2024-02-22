@@ -11,13 +11,14 @@ async function fetchRSSFeed() {
     try {
         const response = await fetch(proxyUrl + feedUrl);
         console.log("RSS feed fetched. Processing response...");
-
         const data = await response.json();
         console.log("Response processed, parsing XML...");
         console.log("Raw response data:", data);
 
         if (data.contents) {
-            parseXML(data.contents);
+            const decodedXml = decodeBase64UTF8(data.contents.split(';base64,')[1]);
+            console.log("Decoded XML:", decodedXml);
+            parseXML(decodedXml);
         } else {
             console.log("No contents in the response:", data);
         }
@@ -26,20 +27,16 @@ async function fetchRSSFeed() {
     }
 }
 
-function parseXML(encodedXmlString) {
-    console.log("Decoding Base64 XML data...");
-    const decodedXml = atob(encodedXmlString.split(';base64,')[1]);
-    console.log("Decoded XML:", decodedXml);
+function decodeBase64UTF8(str) {
+    return decodeURIComponent(atob(str).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+}
 
+function parseXML(xmlString) {
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(decodedXml, "text/xml");
+    const xmlDoc = parser.parseFromString(xmlString, "text/xml");
     console.log("XML Document:", xmlDoc);
-
-    const parseError = xmlDoc.getElementsByTagName("parsererror");
-    if (parseError.length) {
-        console.error("Error in parsing XML:", parseError[0].textContent);
-        return;
-    }
 
     const items = xmlDoc.querySelectorAll('item');
     console.log(`Found ${items.length} 'item' elements.`);
