@@ -33,20 +33,22 @@ function parseFeed(xmlString) {
         }
         const pubDate = item.querySelector('pubDate')?.textContent || '';
         const description = item.querySelector('description')?.textContent || 'No description available';
+        // Extract the source website name from the link
+        const source = new URL(link).hostname.replace('www.', '').replace(/\.fr|\.com|\.net|\.org/gi, '');
 
-        return { title, link, creator, pubDate, description };
+        return { title, link, creator, pubDate, description, source };
     });
 }
 
 function displayArticles(articles) {
     const feedContainer = document.getElementById('feed');
     feedContainer.innerHTML = ''; // Clear existing articles
-    articles.forEach(({ title, link, creator, pubDate, description }) => {
+    articles.forEach(({ title, link, creator, pubDate, description, source }) => {
         const articleHTML = `
             <article>
                 <h2><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></h2>
                 <p>${description}</p>
-                <p>By ${creator} on ${new Date(pubDate).toLocaleDateString()}</p>
+                <p>By ${creator} on ${new Date(pubDate).toLocaleDateString()} | ${source}</p>
             </article>
         `;
         feedContainer.insertAdjacentHTML('beforeend', articleHTML);
