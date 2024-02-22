@@ -32,10 +32,7 @@ function parseFeed(xmlString) {
             creator = item.querySelector('creator')?.textContent || 'Unknown Author';
         }
         const pubDate = item.querySelector('pubDate')?.textContent || '';
-        let description = item.querySelector('description')?.textContent || 'No description available';
-        
-        // Remove the sentence that states where the article first appeared
-        description = description.replace(/L’article .* est apparu en premier sur .*\.|L’article .* est apparu en premier sur .*/g, '');
+        const description = item.querySelector('description')?.textContent || 'No description available';
 
         return { title, link, creator, pubDate, description };
     });
@@ -44,12 +41,12 @@ function parseFeed(xmlString) {
 function displayArticles(articles) {
     const feedContainer = document.getElementById('feed');
     feedContainer.innerHTML = ''; // Clear existing articles
-    articles.forEach(({ title, link, creator, pubDate, description, source }) => {
+    articles.forEach(({ title, link, creator, pubDate, description }) => {
         const articleHTML = `
             <article>
                 <h2><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></h2>
                 <p>${description}</p>
-                <p>By ${creator} on ${new Date(pubDate).toLocaleDateString()} | ${source}</p>
+                <p>By ${creator} on ${new Date(pubDate).toLocaleDateString()}</p>
             </article>
         `;
         feedContainer.insertAdjacentHTML('beforeend', articleHTML);
