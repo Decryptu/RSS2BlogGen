@@ -25,7 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("Document loaded. Starting to fetch RSS feeds...");
-    // Define an array of feed URLs
     const feedUrls = [
         'https://cryptoast.fr/feed/',
         'https://coinacademy.fr/feed/'
@@ -62,6 +61,7 @@ function decodeBase64UTF8(str) {
 function parseXML(xmlString) {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+    console.log("XML Document:", xmlDoc);
     const items = xmlDoc.querySelectorAll('item');
     if (items.length > 0) {
         displayFeed(items);
@@ -72,26 +72,24 @@ function parseXML(xmlString) {
 
 function displayFeed(items) {
     const feedContainer = document.getElementById('feed');
-    items.forEach((item, index) => {
+    items.forEach((item) => {
         const title = item.querySelector('title') ? item.querySelector('title').textContent : 'No Title';
         const link = item.querySelector('link') ? item.querySelector('link').textContent : '#';
         const creatorElement = item.getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", "creator");
         const creator = creatorElement.length > 0 ? creatorElement[0].textContent : 'Unknown Author';
         const pubDate = item.querySelector('pubDate') ? new Date(item.querySelector('pubDate').textContent).toLocaleDateString() : 'No Date';
-        const description = item.querySelector('description') ? item.querySelector('description').textContent : 'No Description Available';
-
-        console.log(`Processing item ${index + 1}: ${title}`);
+        let descriptionContent = item.querySelector('description') ? item.querySelector('description').textContent : '';
+        const contentEncoded = item.querySelector('content\\:encoded') ? item.querySelector('content\\:encoded').textContent : '';
+        const description = contentEncoded || descriptionContent;
+        descriptionContent = description.length > 200 ? description.substring(0, 200) + '...' : description;
 
         const articleHTML = `
             <article>
                 <h2><a href="${link}" target="_blank">${title}</a></h2>
-                <p>${description.substring(0, 100)}...</p>
+                <p>${descriptionContent}</p>
                 <p>By ${creator} on ${pubDate}</p>
             </article>
         `;
-
         feedContainer.innerHTML += articleHTML;
     });
-
-    console.log("All items have been processed and displayed.");
 }
