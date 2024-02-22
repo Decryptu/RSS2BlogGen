@@ -1,57 +1,53 @@
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Document loaded. Fetching RSS feed...");
     fetchRSSFeed();
 });
 
 async function fetchRSSFeed() {
     const proxyUrl = 'https://api.allorigins.win/get?url=';
     const feedUrl = encodeURIComponent('https://cryptoast.fr/feed/');
-    console.log("Attempting to fetch RSS feed...");
-    
     try {
-        const response = await fetch(proxyUrl + feedUrl);
-        console.log("RSS feed fetched. Processing response...");
+        const response = await fetch(`${proxyUrl}${feedUrl}`);
         const data = await response.json();
-        console.log("Response processed. Parsing XML...");
-        
         if (data.contents) {
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(data.contents, "text/xml");
-            console.log("XML parsed. Displaying feed...");
-            displayFeed(xmlDoc);
+            parseXML(data.contents);
         } else {
-            console.log("No contents found in the response:", data);
+            console.log("No RSS feed content found.");
         }
     } catch (error) {
-        console.error("Error fetching RSS feed:", error);
+        console.error("Fetch error:", error);
     }
 }
 
-function displayFeed(xmlDoc) {
-    const items = xmlDoc.querySelectorAll('item');
-    if (items.length > 0) {
-        console.log(`Found ${items.length} items. Rendering...`);
-    } else {
-        console.log("No items found in the XML document.");
+function parseXML(xmlString) {
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+    const items = xmlDoc.getElementsByTagName('item');
+
+    if (items.length === 0) {
+        console.log("No items found in the XML document. Check if the path to <item> elements is correct.");
         return;
     }
 
+    displayFeed(items);
+}
+
+function displayFeed(items) {
     const feedContainer = document.getElementById('feed');
-    feedContainer.innerHTML = ''; // Clear existing feed content
+    feedContainer.innerHTML = '';
 
-    items.forEach((item, index) => {
-        console.log(`Processing item ${index + 1}...`);
-
-        const title = item.querySelector('title').textContent;
-        const link = item.querySelector('link').textContent;
-        const creator = item.querySelector('dc\\:creator').textContent;
-        const pubDate = new Date(item.querySelector('pubDate').textContent).toLocaleDateString();
-        const description = item.querySelector('description').textContent;
-        const thumbnailSrc = description.match(/src="([^"]+)"/) ? description.match(/src="([^"]+)"/)[1] : '';
+    for (let item of items) {
+        const title = item.getElementsByTagName('title')[0].textContent;
+        const link = item.getElementsByTagName('link')[0].textContent;
+        const creator = item.getElementsByTagName('dc:creator')[0].textContent;
+        const pubDate = new Date(item.getElementsByTagName('pubDate')[0].textContent).toLocaleDateString();
+        // Extract description and clean it up for display
+        const description = new DOMParser().parseFromString(item.getElementsByTagName('description')[0].textContent, "text/html").body.textContent;
+        // Fallback thumbnail example, replace with actual extraction logic
+        const thumbnailSrc = "https://example.com/thumbnail.jpg";
 
         const articleHTML = `
             <article>
-                <img src="${thumbnailSrc}" alt="Article Thumbnail">
+                <img src="${thumbnailSrc}" alt="Thumbnail">
                 <div>
                     <h2><a href="${link}" target="_blank">${title}</a></h2>
                     <p>${description.substring(0, 100)}...</p>
@@ -61,7 +57,6 @@ function displayFeed(xmlDoc) {
         `;
 
         feedContainer.innerHTML += articleHTML;
-        console.log(`Item ${index + 1} processed and displayed.`);
-    });
-    console.log("All items rendered.");
+    }
+    console.log(`${items.length} items displayed.`);
 }
