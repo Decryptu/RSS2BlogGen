@@ -51,12 +51,3 @@ article div {
         grid-template-columns: 1fr;
     }
 }
-
-#loader {
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 20px;
-}
