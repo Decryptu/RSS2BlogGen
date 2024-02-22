@@ -19,7 +19,7 @@ async function fetchAndDisplayFeeds(feedUrls) {
             })
         ));
         const allArticles = feedResponses.flatMap(feed => parseFeed(feed))
-            .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+            .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate)); // Sort articles by date
         displayArticles(allArticles);
     } catch (error) {
         console.error("Error fetching or processing feeds:", error);
@@ -40,21 +40,24 @@ function parseFeed(xmlString) {
         let creator = item.querySelector('dc\\:creator')?.textContent || item.querySelector('creator')?.textContent || 'Unknown Author';
         const pubDate = item.querySelector('pubDate')?.textContent || '';
         let description = item.querySelector('description')?.textContent || 'No description available';
-        description = description.replace(/L’article .* est apparu en premier sur .*\.|L’article .* est apparu en premier sur .*/g, '');
-        return { title, link, creator, pubDate, description };
+        description = description.replace(/<p>L’article .*?<\/p>/, '').trim(); // Remove the origin sentence.
+        
+        // Extract the site name from the link URL
+        const siteName = new URL(link).hostname.replace(/^www\./, '').split('.')[0];
+        return { title, link, creator, pubDate, description, siteName };
     });
 }
 
 function displayArticles(articles) {
     const feedContainer = document.getElementById('feed');
     feedContainer.innerHTML = ''; // Clear existing articles
-    articles.forEach(({ title, link, creator, pubDate, description }) => {
+    articles.forEach(({ title, link, creator, pubDate, description, siteName }) => {
         const pubDateDisplay = pubDate ? new Date(pubDate).toLocaleDateString() : 'No Date';
         const articleHTML = `
             <article>
                 <h2><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></h2>
                 <p>${description}</p>
-                <p>By ${creator} on ${pubDateDisplay}</p>
+                <p>By ${creator} on ${pubDateDisplay} | ${siteName}</p>
             </article>
         `;
         feedContainer.insertAdjacentHTML('beforeend', articleHTML);
