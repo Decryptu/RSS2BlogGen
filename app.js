@@ -55,7 +55,8 @@ function displayFeed(items) {
     items.forEach((item, index) => {
         const title = item.querySelector('title') ? item.querySelector('title').textContent : 'No Title';
         const link = item.querySelector('link') ? item.querySelector('link').textContent : '#';
-        const creator = item.querySelector('dc\\:creator') ? item.querySelector('dc\\:creator').textContent : 'Unknown Author';
+        const creatorElement = item.getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", "creator");
+        const creator = creatorElement.length > 0 ? creatorElement[0].textContent : 'Unknown Author';
         const pubDate = item.querySelector('pubDate') ? new Date(item.querySelector('pubDate').textContent).toLocaleDateString() : 'No Date';
         const description = item.querySelector('description') ? item.querySelector('description').textContent : 'No Description Available';
 
