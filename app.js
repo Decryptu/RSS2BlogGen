@@ -83,14 +83,21 @@ function displayFeed(items) {
         const creatorElement = item.getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", "creator");
         const creator = creatorElement.length > 0 ? creatorElement[0].textContent : 'Unknown Author';
         const pubDate = item.querySelector('pubDate') ? new Date(item.querySelector('pubDate').textContent).toLocaleDateString() : 'No Date';
-        const description = item.querySelector('description') ? item.querySelector('description').textContent : 'No Description Available';
+        
+        // Handling both 'description' and 'content:encoded' elements
+        let descriptionContent = item.querySelector('description') ? item.querySelector('description').textContent : '';
+        const contentEncoded = item.querySelector('content\\:encoded') ? item.querySelector('content\\:encoded').textContent : '';
+        
+        // Prefer 'content:encoded' if available, otherwise use 'description'
+        const description = contentEncoded || descriptionContent;
+        descriptionContent = description.length > 200 ? description.substring(0, 200) + '...' : description;
 
         console.log(`Processing item ${index + 1}: ${title}`);
 
         const articleHTML = `
             <article>
                 <h2><a href="${link}" target="_blank">${title}</a></h2>
-                <p>${description.substring(0, 100)}...</p>
+                <p>${descriptionContent}</p>
                 <p>By ${creator} on ${pubDate}</p>
             </article>
         `;
