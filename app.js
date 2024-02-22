@@ -24,31 +24,33 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Document loaded. Starting to fetch RSS feed...");
-    fetchRSSFeed();
+    console.log("Document loaded. Starting to fetch RSS feeds...");
+    // Define an array of feed URLs
+    const feedUrls = [
+        'https://cryptoast.fr/feed/',
+        'https://coinacademy.fr/feed/'
+    ];
+    // Fetch and display feeds
+    fetchAndDisplayFeeds(feedUrls);
 });
 
-async function fetchRSSFeed() {
+async function fetchAndDisplayFeeds(feedUrls) {
     const proxyUrl = 'https://api.allorigins.win/get?url=';
-    const feedUrl = encodeURIComponent('https://coinacademy.fr/feed/');
-    console.log(`Fetching RSS feed from: ${proxyUrl + feedUrl}`);
-
-    try {
-        const response = await fetch(proxyUrl + feedUrl);
-        console.log("RSS feed fetched. Processing response...");
-        const data = await response.json();
-        console.log("Response processed, parsing XML...");
-        console.log("Raw response data:", data);
-
-        if (data.contents) {
-            const decodedXml = decodeBase64UTF8(data.contents.split(';base64,')[1]);
-            console.log("Decoded XML:", decodedXml);
-            parseXML(decodedXml);
-        } else {
-            console.log("No contents in the response:", data);
+    for (const feedUrl of feedUrls) {
+        const encodedUrl = encodeURIComponent(feedUrl);
+        console.log(`Fetching RSS feed from: ${proxyUrl + encodedUrl}`);
+        try {
+            const response = await fetch(proxyUrl + encodedUrl);
+            const data = await response.json();
+            if (data.contents) {
+                const decodedXml = decodeBase64UTF8(data.contents.split(';base64,')[1]);
+                parseXML(decodedXml);
+            } else {
+                console.log("No contents in the response:", data);
+            }
+        } catch (error) {
+            console.error("Error fetching RSS feed:", error);
         }
-    } catch (error) {
-        console.error("Error fetching RSS feed:", error);
     }
 }
 
@@ -61,22 +63,16 @@ function decodeBase64UTF8(str) {
 function parseXML(xmlString) {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-    console.log("XML Document:", xmlDoc);
-
     const items = xmlDoc.querySelectorAll('item');
-    console.log(`Found ${items.length} 'item' elements.`);
-
     if (items.length > 0) {
         displayFeed(items);
     } else {
-        console.error("No items found in the XML document. Check if the path to <item> elements is correct.");
+        console.error("No items found in the XML document.");
     }
 }
 
 function displayFeed(items) {
     const feedContainer = document.getElementById('feed');
-    feedContainer.innerHTML = '';
-
     items.forEach((item, index) => {
         const title = item.querySelector('title') ? item.querySelector('title').textContent : 'No Title';
         const link = item.querySelector('link') ? item.querySelector('link').textContent : '#';
