@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function fetchRSSFeed() {
     const proxyUrl = 'https://api.allorigins.win/get?url=';
-    const feedUrl = encodeURIComponent('https://cryptoast.fr/feed/');
+    const feedUrl = encodeURIComponent('https://coinacademy.fr/feed/');
     console.log(`Fetching RSS feed from: ${proxyUrl + feedUrl}`);
 
     try {
