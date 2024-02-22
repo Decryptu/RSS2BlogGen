@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log("Document loaded. Starting to fetch RSS feeds...");
     const feedUrls = [
         'https://cryptoast.fr/feed/',
         'https://coinacademy.fr/feed/'
@@ -35,58 +34,52 @@ document.addEventListener('DOMContentLoaded', () => {
 async function fetchAndDisplayFeeds(feedUrls) {
     const proxyUrl = 'https://api.allorigins.win/get?url=';
     for (const feedUrl of feedUrls) {
-        const encodedUrl = encodeURIComponent(feedUrl);
-        console.log(`Fetching RSS feed from: ${proxyUrl + encodedUrl}`);
         try {
-            const response = await fetch(proxyUrl + encodedUrl);
+            const response = await fetch(`${proxyUrl}${encodeURIComponent(feedUrl)}`);
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             if (data.contents) {
                 const decodedXml = decodeBase64UTF8(data.contents.split(';base64,')[1]);
                 parseXML(decodedXml);
             } else {
-                console.log("No contents in the response:", data);
+                console.error("No contents found in the response.");
             }
         } catch (error) {
-            console.error("Error fetching RSS feed:", error);
+            console.error("Error fetching RSS feed:", error.message);
         }
     }
 }
 
 function decodeBase64UTF8(str) {
-    return decodeURIComponent(atob(str).split('').map(function(c) {
+    return decodeURIComponent(Array.prototype.map.call(atob(str), (c) => {
         return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
 }
 
 function parseXML(xmlString) {
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xmlString, "text/xml");
-    console.log("XML Document:", xmlDoc);
+    const xmlDoc = parser.parseFromString(xmlString, "application/xml");
     const items = xmlDoc.querySelectorAll('item');
-    if (items.length > 0) {
-        displayFeed(items);
-    } else {
+    if (items.length === 0) {
         console.error("No items found in the XML document.");
+        return;
     }
+    displayFeed(items);
 }
 
 function displayFeed(items) {
     const feedContainer = document.getElementById('feed');
     items.forEach((item) => {
-        const title = item.querySelector('title') ? item.querySelector('title').textContent : 'No Title';
-        const link = item.querySelector('link') ? item.querySelector('link').textContent : '#';
-        const creatorElement = item.getElementsByTagNameNS("http://purl.org/dc/elements/1.1/", "creator");
-        const creator = creatorElement.length > 0 ? creatorElement[0].textContent : 'Unknown Author';
-        const pubDate = item.querySelector('pubDate') ? new Date(item.querySelector('pubDate').textContent).toLocaleDateString() : 'No Date';
-        let descriptionContent = item.querySelector('description') ? item.querySelector('description').textContent : '';
-        const contentEncoded = item.querySelector('content\\:encoded') ? item.querySelector('content\\:encoded').textContent : '';
-        const description = contentEncoded || descriptionContent;
-        descriptionContent = description.length > 200 ? description.substring(0, 200) + '...' : description;
+        const title = item.querySelector('title')?.textContent || 'No Title';
+        const link = item.querySelector('link')?.textContent || '#';
+        const creator = item.querySelector('dc\\:creator')?.textContent || 'Unknown Author';
+        const pubDate = new Date(item.querySelector('pubDate')?.textContent).toLocaleDateString() || 'No Date';
+        const description = item.querySelector('description')?.textContent || 'No description available';
 
         const articleHTML = `
             <article>
-                <h2><a href="${link}" target="_blank">${title}</a></h2>
-                <p>${descriptionContent}</p>
+                <h2><a href="${link}" target="_blank" rel="noopener noreferrer">${title}</a></h2>
+                <p>${description}</p>
                 <p>By ${creator} on ${pubDate}</p>
             </article>
         `;
