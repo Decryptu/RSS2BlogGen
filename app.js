@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
         'https://coinacademy.fr/feed/',
         'https://journalducoin.com/feed/'
     ];
-    initializeTheme();
+    initializeTheme(); // Initialize theme based on local storage or default
     fetchAndDisplayFeeds(feedUrls);
     setupSearchFilter();
 });
@@ -15,7 +15,7 @@ function initializeTheme() {
     const currentTheme = localStorage.getItem('theme') || 'dark';
     document.body.className = currentTheme;
     const themeSwitchButton = document.getElementById('theme-switch');
-    themeSwitchButton.textContent = currentTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+    themeSwitchButton.checked = currentTheme === 'light'; // Set the switch based on the current theme
     themeSwitchButton.addEventListener('click', toggleTheme);
 }
 
@@ -23,7 +23,8 @@ function toggleTheme() {
     const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
     document.body.className = newTheme;
     localStorage.setItem('theme', newTheme);
-    document.getElementById('theme-switch').textContent = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+    const themeSwitchButton = document.getElementById('theme-switch');
+    themeSwitchButton.checked = newTheme === 'light'; // Update the switch position based on the new theme
 }
 
 function setupSearchFilter() {
